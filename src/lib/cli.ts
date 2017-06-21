@@ -21,6 +21,7 @@ import * as Config from './config';
 import * as Rule from './rule-generator';
 import { debug as d } from './utils/debug';
 import { getAsUris } from './utils/get-as-uri';
+import { CLIOptions, IConfig, IORA, IProblem, URL } from './types'; //eslint-disable-line no-unused-vars
 import { loadJSONFile } from './utils/misc';
 import * as logger from './utils/logging';
 import { cutString } from './utils/misc';
@@ -30,7 +31,7 @@ import { Severity } from './types';
 import * as sonar from './sonar';
 import * as validator from './config/config-validator';
 
-const debug = d(__filename);
+const debug: debug.IDebugger = d(__filename);
 const pkg = loadJSONFile(path.join(__dirname, '../../../package.json'));
 
 const messages = {
@@ -48,9 +49,9 @@ const messages = {
     'traverse::up': 'Traversing the DOM'
 };
 
-const setUpUserFeedback = (sonarInstance: sonar.Sonar, spinner: { text: string }) => {
+const setUpUserFeedback = (sonarInstance: sonar.Sonar, spinner: IORA) => {
     sonarInstance.prependAny((event: string, value: { resource: string }) => {
-        const message = messages[event];
+        const message: string = messages[event];
 
         if (!message) {
             return;
@@ -68,15 +69,15 @@ export const cli = {
     /** Executes the CLI based on an array of arguments that is passed in. */
     execute: async (args: string | Array<string> | Object): Promise<number> => {
 
-        const format = (formatterName, results) => {
+        const format = (formatterName: string, results: IProblem[]) => {
             const formatters = resourceLoader.getFormatters();
             const formatter = formatters.get(formatterName) || formatters.get('json');
 
             formatter.format(results);
         };
 
-        const currentOptions = options.parse(args);
-        const targets = getAsUris(currentOptions._);
+        const currentOptions: CLIOptions = options.parse(args);
+        const targets: Array<URL> = getAsUris(currentOptions._);
 
         if (currentOptions.version) { // version from package.json
             logger.log(`v${pkg.version}`);
@@ -108,7 +109,7 @@ export const cli = {
             return 0;
         }
 
-        let configPath;
+        let configPath: string;
 
         if (!currentOptions.config) {
             configPath = Config.getFilenameForDirectory(process.cwd());
@@ -116,7 +117,7 @@ export const cli = {
             configPath = currentOptions.config;
         }
 
-        const config = Config.load(configPath);
+        const config: IConfig = Config.load(configPath);
 
         if (!validator.validateConfig(config)) {
             logger.error('Configuration not valid');
@@ -124,13 +125,13 @@ export const cli = {
             return 1;
         }
 
-        const engine = await sonar.create(config);
-        const start = Date.now();
+        const engine: sonar.Sonar = await sonar.create(config);
+        const start: number = Date.now();
 
 
-        let exitCode = 0;
+        let exitCode: number = 0;
 
-        const spinner = ora({ spinner: 'line' });
+        const spinner: IORA = ora({ spinner: 'line' });
 
         if (!currentOptions.debug) {
             spinner.start();
@@ -146,8 +147,8 @@ export const cli = {
         for (const target of targets) {
             try {
                 // spinner.text = `Scanning ${target.href}`;
-                const results = await engine.executeOn(target); // eslint-disable-line no-await-in-loop
-                const hasError = results.some((result) => {
+                const results: Array<IProblem> = await engine.executeOn(target); // eslint-disable-line no-await-in-loop
+                const hasError: boolean = results.some((result) => {
                     return result.severity === Severity.error;
                 });
 

@@ -9,9 +9,11 @@
 
 import * as path from 'path';
 
+import { AxeResults, Result as AxeResult, NodeResult as AxeNodeResult } from 'axe-core'; // eslint-disable-line no-unused-vars
+
 import { readFileAsync } from '../../utils/misc';
 import { debug as d } from '../../utils/debug';
-import { ITraverseEnd, IRule, IRuleBuilder, Severity } from '../../types'; // eslint-disable-line no-unused-vars
+import { IAsyncHTMLElement, ITraverseEnd, IRule, IRuleBuilder, Severity } from '../../types'; // eslint-disable-line no-unused-vars
 import { RuleContext } from '../../rule-context'; // eslint-disable-line no-unused-vars
 
 const debug = d(__filename);
@@ -23,7 +25,7 @@ const debug = d(__filename);
 const rule: IRuleBuilder = {
     create(context: RuleContext): IRule {
 
-        let axeConfig = {};
+        let axeConfig: object = {};
 
         const loadRuleConfig = () => {
             if (!context.ruleOptions) {
@@ -33,11 +35,11 @@ const rule: IRuleBuilder = {
             axeConfig = context.ruleOptions;
         };
 
-        const generateScript = () => {
+        const generateScript = (): string => {
             // This is run in the page, not Sonar itself.
             // axe.run returns a promise which fulfills with a results object
             // containing any violations.
-            const script =
+            const script: string =
                 `function runA11yChecks() {
     return window['axe'].run(document, ${JSON.stringify(axeConfig, null, 2)});
 }`;
@@ -45,22 +47,22 @@ const rule: IRuleBuilder = {
             return script;
         };
 
-        const getElement = async (node) => {
-            const selector = node.target[0];
-            const elements = await context.querySelectorAll(selector);
+        const getElement = async (node: AxeNodeResult): Promise<IAsyncHTMLElement> => {
+            const selector: string = node.target[0];
+            const elements: IAsyncHTMLElement[] = await context.querySelectorAll(selector);
 
             return elements[0];
         };
 
         const validate = async (traverseEnd: ITraverseEnd) => {
             const { resource } = traverseEnd;
-            const axeCore = await readFileAsync(path.join(process.cwd(), 'node_modules', 'axe-core', 'axe.js'));
-            const script = `(function () {
+            const axeCore: string = await readFileAsync(path.join(process.cwd(), 'node_modules', 'axe-core', 'axe.js'));
+            const script: string = `(function () {
     ${axeCore};
     return (${generateScript()}());
 }())`;
 
-            let result = null;
+            let result: AxeResults = null;
 
             /* istanbul ignore next */
             try {
@@ -85,9 +87,9 @@ const rule: IRuleBuilder = {
                 return;
             }
 
-            const reportPromises = result.violations.reduce((promises, violation) => {
+            const reportPromises: Promise<void>[] = result.violations.reduce((promises: Promise<void>[], violation: AxeResult) => {
 
-                const elementPromises = violation.nodes.map(async (node) => {
+                const elementPromises = violation.nodes.map(async (node: AxeNodeResult) => {
                     const element = await getElement(node);
 
                     //TODO: find the right element here using node.target[0] ?

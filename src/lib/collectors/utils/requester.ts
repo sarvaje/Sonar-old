@@ -40,7 +40,7 @@ export class Requester {
     /** Internal `request` object. */
     private _request: request;
     /** Internal `redirectManager`. */
-    private _redirects = new RedirectManager();
+    private _redirects: RedirectManager = new RedirectManager();
 
     constructor(customOptions = {}) {
         const options = Object.assign({}, defaults, customOptions);
@@ -61,8 +61,8 @@ export class Requester {
     public get(uri: string): Promise<INetworkData> {
         debug(`Requesting ${uri}`);
 
-        return new Promise((resolve, reject) => {
-            const byteChunks = [];
+        return new Promise((resolve: Function, reject: Function) => {
+            const byteChunks: Array<Buffer> = [];
             let rawBodyResponse: Buffer;
 
             this._request({ uri }, async (err, response, rawBody) => {
@@ -91,11 +91,11 @@ export class Requester {
                     }
                 }
 
-                const hops = this._redirects.calculate(uri);
-                const charset = getCharset(response.headers);
-                const body = iconv.encodingExists(charset) ? iconv.decode(rawBody, charset) : null;
+                const hops: string[] = this._redirects.calculate(uri);
+                const charset: string = getCharset(response.headers);
+                const body: string = iconv.encodingExists(charset) ? iconv.decode(rawBody, charset) : null;
 
-                const networkData = {
+                const networkData: INetworkData = {
                     request: {
                         headers: response.request.headers,
                         url: hops[0] || uri
@@ -121,7 +121,7 @@ export class Requester {
                  */
                 .on('response', (response) => {
                     response
-                        .on('data', (data) => {
+                        .on('data', (data: Buffer) => {
                             byteChunks.push(data);
                         })
                         .on('end', () => {

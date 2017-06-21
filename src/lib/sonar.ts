@@ -16,12 +16,12 @@ import { EventEmitter2 as EventEmitter } from 'eventemitter2';
 
 import { debug as d } from './utils/debug';
 import { getSeverity } from './config/config-rules';
-import { IAsyncHTMLElement, ICollector, IProblem, IProblemLocation, IRule, IPlugin, Severity, URL } from './types'; // eslint-disable-line no-unused-vars
+import { IAsyncHTMLElement, ICollector, IConfig, IProblem, IProblemLocation, IRule, IPlugin, Severity, URL } from './types'; // eslint-disable-line no-unused-vars
 import * as logger from './utils/logging';
 import * as resourceLoader from './utils/resource-loader';
 import { RuleContext } from './rule-context';
 
-const debug = d(__filename);
+const debug: debug.IDebugger = d(__filename);
 
 // ------------------------------------------------------------------------------
 // Public interface
@@ -35,11 +35,11 @@ export class Sonar extends EventEmitter {
     private collectorId: string
     private collectorConfig: object
     private messages: Array<IProblem>
-    private browsersList: Array<String> = [];
+    private browsersList: Array<string> = [];
     private ignoredUrls: Map<string, RegExp[]>;
     private _formatter: string
 
-    get pageDOM() {
+    get pageDOM(): object {
         return this.collector.dom;
     }
 
@@ -47,19 +47,19 @@ export class Sonar extends EventEmitter {
         return this.collector.html;
     }
 
-    get pageHeaders() {
+    get pageHeaders(): object {
         return this.collector.headers;
     }
 
-    get targetedBrowsers() {
+    get targetedBrowsers(): Array<string> {
         return this.browsersList;
     }
 
-    get formatter() {
+    get formatter(): string {
         return this._formatter;
     }
 
-    private isIgnored(urls: RegExp[], resource: string) {
+    private isIgnored(urls: RegExp[], resource: string): boolean {
         if (!urls) {
             return false;
         }
@@ -69,7 +69,7 @@ export class Sonar extends EventEmitter {
         });
     }
 
-    constructor(config) {
+    constructor(config: IConfig) {
         super({
             delimiter: '::',
             maxListeners: 0,
@@ -105,12 +105,12 @@ export class Sonar extends EventEmitter {
         debug('Initializing ignored urls');
         this.ignoredUrls = new Map();
         if (config.ignoredUrls) {
-            _.forEach(config.ignoredUrls, (rules, urlRegexString) => {
-                rules.forEach((rule) => {
+            _.forEach(config.ignoredUrls, (rules: Array<string>, urlRegexString: string) => {
+                rules.forEach((rule: string) => {
                     const ruleName = rule === '*' ? 'all' : rule;
 
-                    const urlsInRule = this.ignoredUrls.get(ruleName);
-                    const urlRegex = new RegExp(urlRegexString, 'i');
+                    const urlsInRule: Array<RegExp> = this.ignoredUrls.get(ruleName);
+                    const urlRegex: RegExp = new RegExp(urlRegexString, 'i');
 
                     if (!urlsInRule) {
                         this.ignoredUrls.set(ruleName, [urlRegex]);
@@ -294,7 +294,7 @@ export class Sonar extends EventEmitter {
     }
 }
 
-export const create = async (config): Promise<Sonar> => {
+export const create = async (config: IConfig): Promise<Sonar> => {
     const sonar = new Sonar(config);
 
     await sonar.init();

@@ -19,9 +19,9 @@ const debug = d(__filename);
 // ------------------------------------------------------------------------------
 
 /** Returns the severity of a rule based on its configuration */
-export const getSeverity = (config): Severity => {
+export const getSeverity = (config: number | string | Array<any>): Severity => {
 
-    let configuredSeverity;
+    let configuredSeverity: Severity;
 
     if (typeof config === 'string') {
         // Ex.: "rule-name": "warning"
@@ -59,14 +59,14 @@ export const validate = (rule: IRuleBuilder, config, ruleId: string): boolean =>
         return false;
     }
 
-    const configuredSeverity = getSeverity(config);
+    const configuredSeverity: Severity = getSeverity(config);
 
     if (configuredSeverity === null) {
         throw new Error(`Invalid severity configured for ${ruleId}`);
     }
 
     // Rule schema validation
-    const schema = rule.meta.schema;
+    const schema: any[] = rule.meta.schema;
 
     // Only way to have something else to validate is if rule config
     // is similar to:  "rule-name": ["warning", {}]. Otherwise it's

@@ -4,6 +4,8 @@ import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import test from 'ava';
 
+import { ICollectorConfig } from '../../src/lib/types';
+
 const inquirer = { prompt() { } };
 const resourceLoader = {
     getCollectors() { },
@@ -80,21 +82,21 @@ test(`if package.json is an invalid JSON, it should return an exception`, (t) =>
 test(`if the config file doesn't have an extension, it should be parse as JSON file`, (t) => {
     const configuration = config.load(path.join(__dirname, './fixtures/sonarrc'));
 
-    t.is(configuration.collector.name, 'cdp');
+    t.is((configuration.collector as ICollectorConfig).name, 'cdp');
     t.is(configuration.rules['disallowed-headers'], 'warning');
 });
 
 test(`if the config file is JavaScript, it should return the configuration part`, (t) => {
     const configuration = config.load(path.join(__dirname, './fixtures/sonarrc.js'));
 
-    t.is(configuration.collector.name, 'cdp');
+    t.is((configuration.collector as ICollectorConfig).name, 'cdp');
     t.is(configuration.rules['disallowed-headers'], 'warning');
 });
 
 test(`if package.json contains a valid sonar coniguration, it should return it`, (t) => {
     const configuration = config.load(path.join(__dirname, './fixtures/package.json'));
 
-    t.is(configuration.collector.name, 'cdp');
+    t.is((configuration.collector as ICollectorConfig).name, 'cdp');
     t.is(configuration.rules['disallowed-headers'], 'warning');
 });
 

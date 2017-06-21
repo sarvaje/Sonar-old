@@ -11,6 +11,7 @@ import * as _ from 'lodash';
 import * as schemaValidator from 'is-my-json-valid/require';
 
 import { debug as d } from '../utils/debug';
+import { IRuleBuilder } from '../types'; //eslint-disable-line no-unused-vars
 import * as logger from '../utils/logging';
 import * as resourceLoader from '../utils/resource-loader';
 import { validate as validateRule } from './config-rules';
@@ -35,10 +36,10 @@ export const validateConfig = (config): boolean => {
     }
 
     // Validate also collectors, plugins, etc.
-    const rules = resourceLoader.getRules();
+    const rules: Map<string, IRuleBuilder> = resourceLoader.getRules();
 
-    const areRulesValid = _.reduce(config.rules, (acum, ruleConfig, ruleId) => {
-        const rule = rules.get(ruleId);
+    const areRulesValid = _.reduce(config.rules, (acum: boolean, ruleConfig, ruleId: string) => {
+        const rule: IRuleBuilder = rules.get(ruleId);
 
         if (!rule) {
             logger.error(`Rule "${ruleId}" not found`);
@@ -46,7 +47,7 @@ export const validateConfig = (config): boolean => {
             return false;
         }
 
-        let validConfig = true;
+        let validConfig: boolean = true;
 
         try {
             validConfig = validateRule(rule, ruleConfig, ruleId);

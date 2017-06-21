@@ -31,7 +31,7 @@ export class JSDOMAsyncHTMLElement implements IAsyncHTMLElement {
     protected _htmlelement: HTMLElement;
     private _ownerDocument: IAsyncHTMLDocument;
 
-    constructor(htmlelement) {
+    constructor(htmlelement: HTMLElement) {
         this._htmlelement = htmlelement;
         this._ownerDocument = new JSDOMAsyncHTMLDocument(htmlelement.ownerDocument);
     }

@@ -44,7 +44,8 @@ test.afterEach.always((t) => {
 
 test(`If config is an empty object, we shouldn't throw an error`, (t) => {
     t.throws(() => {
-        const sonarObject = new sonar.Sonar({}); //eslint-disable-line no-unused-vars
+        //<any>{} to avoid the type checking if not is not possible to use just {}
+        const sonarObject = new sonar.Sonar(<any>{}); //eslint-disable-line no-unused-vars
     }, Error);
 });
 
